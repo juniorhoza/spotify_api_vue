@@ -2,7 +2,7 @@
   <div  >
   <div :class="{overlay:show}" @click.alt="hidely"  @keypress.esc="hidely">.</div>
   <div class="main">.</div>
-  <h1 class="main_title">spotify information</h1>
+  <h1 class="main_title">spotify and youtube</h1>
    <input type="text" class="artist" v-model="cocktail" @keypress.enter="Get_coktail" placeholder="Enter an artist name..." autofocus/>
   <div class="container"  v-if="result!= null"   >
   
@@ -69,7 +69,7 @@
 
       <a  :href="album.track.album.uri" ><img :src="album.track.album.coverArt.sources[0].url" alt=""></a>
 
-      <p class="seeLyrics" @click="lyrics(album.track.id)"> see lyrics</p>
+      <p class="seeLyrics" @click="lyrics(album.track.id,album.track.name)"> see lyrics</p>
 
 </div>
 
@@ -78,7 +78,13 @@
  </div> 
       <div v-if="show"  class="lyrics" @click.alt="hidely" @keypress.esc="hidely">
       <p class="close">Click + Alt to close </p>
-     <p class="ly">{{actualLyrics}}</p>
+      <iframe width="420" height="345" :src="link">
+</iframe>
+<div class=" ly" >
+
+     <p class="paro" v-for="v,index in paroles" :key="index">{{v}}</p>
+
+</div>
       
       </div>
  </div>
@@ -125,7 +131,7 @@
       
 <p>duration : {{(track.data.duration.totalMilliseconds/60000).toFixed(2) }} Minutes</p>
      
-  
+  <p class="seeLyrics" @click="lyrics(track.data.id,track.data.name)"> see lyrics</p>
 
 
 </div>
@@ -165,12 +171,22 @@ export default {
     let verified=ref(false)
     let foward=ref('')
     let back=ref('')
-
+    let VidId=ref('')
+    let data_YT=ref([])
+    let link=ref('')
+    let paroles=ref([])
  const options = {
 	method: 'GET',
 	headers: {
-		'X-RapidAPI-Key': '[your api]',
+		'X-RapidAPI-Key': '[your API key]',
 		'X-RapidAPI-Host': 'spotify23.p.rapidapi.com'
+	}
+};
+const options2 = {
+	method: 'GET',
+	headers: {
+		'X-RapidAPI-Key': '[your API key]',
+		'X-RapidAPI-Host': 'youtube138.p.rapidapi.com'
 	}
 };
    function Get_coktail(){
@@ -179,6 +195,7 @@ export default {
      albums.value=[]
      tracks.value=[]
      verified.value=false
+    
 
         
 fetch(`https://spotify23.p.rapidapi.com/search/?q=${cocktail.value}&type=multi&offset=0&limit=1&numberOfTopResults=10`, options)
@@ -203,7 +220,7 @@ fetch(`https://spotify23.p.rapidapi.com/search/?q=${cocktail.value}&type=multi&o
 
   })
 
-        fetch(`https://spotify23.p.rapidapi.com/search/?q=${cocktail.value}&type=multi&offset=0&limit=10&numberOfTopResults=10`, options)
+        fetch(`https://spotify23.p.rapidapi.com/search/?q=${cocktail.value}&type=multi&offset=0&limit=19&numberOfTopResults=10`, options)
 	.then(response => response.json())
 	.then(response => {
         result.value=response
@@ -212,14 +229,18 @@ fetch(`https://spotify23.p.rapidapi.com/search/?q=${cocktail.value}&type=multi&o
         
 
 
+console.log(tracks.value)
   })
 
 
   })
 	.catch(err => console.error(err));
    }
-
-function lyrics(Id){
+function lyrics(Id,name){
+   actualLyrics.value=" "
+     VidId.value=""
+     link.value=" "
+     paroles.value=[]
           actualLyrics.value=" "
           show.value=true
   fetch(`https://spotify23.p.rapidapi.com/track_lyrics/?id=${Id}`, options)
@@ -229,26 +250,40 @@ function lyrics(Id){
     
     tracklyrics.value.forEach((lyric)=>{
       actualLyrics.value+=lyric.words+"\n"
-      console.log()
-    })
-    console.log(actualLyrics.value)})
-	.catch(err => console.error(err));
+      if(lyric.words!=" "||false||null||""){
+        paroles.value.push(lyric.words)
+        
+      }
+      })
+	
    
+    console.log(paroles.value)
+      console.log(name)
+
+
+
+fetch(`https://youtube138.p.rapidapi.com/search/?q=${name}&hl=en&gl=US`, options2)
+	.then(response => response.json())
+	.then(response =>{
+    data_YT.value=response
+    console.log("from youtube")
+    console.log(data_YT.value)
+    VidId.value=data_YT.value.contents[0].video.videoId
+    link.value=`https://www.youtube.com/embed/${VidId.value}`
+    console.log(link.value)
+    console.log(VidId.value)
+  })
+	.catch(err => console.error(err));
+    })
 }
 function hidely(){
   show.value=false
 }
-function next(){
-     foward.value+=100
 
-}
-function previous(){
-  
-}
 
    return{
-     Get_coktail,tracklyrics,
-     cocktail,result,options,special_result,albums,tracks,artistId,backColor,TrackId,lyrics,actualLyrics,show,hidely,verified,next,previous,foward,back
+     Get_coktail,tracklyrics,options2,
+     cocktail,result,options,special_result,albums,tracks,artistId,backColor,TrackId,lyrics,actualLyrics,show,hidely,verified,foward,back,data_YT,VidId,link,paroles
    }
   }
   
@@ -262,6 +297,11 @@ html{
 *{
   font-family:"poppins";
   font-size: 16px;
+}
+iframe{
+  width: 70vw;
+  height:80vh;
+  
 }
 .lyrics{
 width: 80vw;
@@ -296,13 +336,18 @@ height:100vh;
 .ly{
   height:100%;
   font-size:19px;
-  position: absolute;
+  
   top: 50%;
   left: 50%;
+  display:flex;
+  flex-direction: column;;
+  gap: 15px;
   color: white;
+  
+  margin-top: 650px;
   transform: translate(-50%,-50%);
   -ms-transform: translate(-50%,-50%);
-  margin-top: 120px;
+  position: absolute;
 }
 .clearfix{overflow:hidden}
 .clearfix:after {
@@ -310,6 +355,9 @@ clear: both;
 content: " ";
 display: block;
 
+}
+.paro{
+  
 }
 .biography{
   text-align: left;
@@ -385,7 +433,7 @@ li{
 }
 
 .albums{
- width: 100vw;
+ width: 110vw;
 margin-right: auto;
 position: relative;
 left: -10%;
@@ -399,6 +447,7 @@ left: -10%;
   
 margin-bottom: 100px;
 }
+
 .main_title{
   font-size: 50px;
 }
