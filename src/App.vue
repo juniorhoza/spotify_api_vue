@@ -103,6 +103,12 @@
 <h1>other albums</h1>
  
 <div   class="albums">
+<div class="albu"></div>
+<div class="albu"></div>
+
+<div class="albu"></div>
+<div class="albu last"></div>
+
 <div class="albu" v-for="album,inde in albums" :key="inde" >
 
 <p><a  :href="album.data.uri"> {{album.data.name}}</a> </p>
@@ -178,14 +184,14 @@ export default {
  const options = {
 	method: 'GET',
 	headers: {
-		'X-RapidAPI-Key': '[your API key]',
+		'X-RapidAPI-Key': 'c8404eb6cdmsh0cd6a4a9c680db3p185f06jsnf94f13743dd4',
 		'X-RapidAPI-Host': 'spotify23.p.rapidapi.com'
 	}
 };
 const options2 = {
 	method: 'GET',
 	headers: {
-		'X-RapidAPI-Key': '[your API key]',
+		'X-RapidAPI-Key': 'c8404eb6cdmsh0cd6a4a9c680db3p185f06jsnf94f13743dd4',
 		'X-RapidAPI-Host': 'youtube138.p.rapidapi.com'
 	}
 };
@@ -402,6 +408,7 @@ a{
 .albu{
 margin-bottom:10px;
 border-radius: 10px;
+
 transition:0.3s all ease-in-out;
 }
 .albu:hover{
@@ -422,6 +429,10 @@ transition:0.3s all ease-in-out;
 }
 li{
   list-style-type:none;
+}
+.last{
+width: 900px;
+height: 80px;
 }
 .artist{
   width: 80vw;
